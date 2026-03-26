@@ -1,0 +1,23 @@
+[package]
+name = "imgui-smash"
+version = "1.0.0"
+authors = []
+edition = "2021"
+
+[package.metadata.skyline]
+titleid = "01006A800016E000" # Smash Ultimate
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+skyline = "0.6.0"
+lazy_static = "1.4"
+imgui-api = { path = "../imgui-api" }
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+lto = true
