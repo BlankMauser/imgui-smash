@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 skyline = "0.6.0"
 lazy_static = "1.4"
-imgui-api = { path = "../imgui-api" }
+imgui-api = { git = "https://github.com/Coolsonickirby/imgui-api" }
 
 [profile.dev]
 panic = "abort"
