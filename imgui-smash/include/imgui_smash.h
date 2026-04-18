@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "smash_types.h"
 
 /**
@@ -56,3 +58,25 @@ extern "C" void imgui_smash_add_on_new_frame(NewFrameFunc newFrameCallback);
  * @param loggerCallback the external logger function
  */
 extern "C" void imgui_smash_set_logger(LoggerFunc loggerCallback);
+
+#ifdef IMGUI_SMASH_ENABLE_NGPU_BRIDGE
+/**
+ * Bridge mode: initialize from externally-supplied NVN state instead of owning
+ * `nvnBootstrapLoader`.
+ */
+extern "C" bool imgui_smash_try_initialize_with_ngpu_bridge(
+    void *device,
+    void *queue,
+    void *window,
+    void *procAddress);
+
+/**
+ * Bridge mode: record one ImGui pass against an externally-supplied render
+ * target. This differs from the original path, which renders the texture
+ * captured through bootstrap-owned window state.
+ */
+extern "C" uint64_t imgui_smash_render_from_ngpu_present(
+    void *queue,
+    void *window,
+    void *activeTexture);
+#endif

@@ -18,6 +18,10 @@
 
 #define UBOSIZE 0x1000
 
+#ifdef IMGUI_SMASH_ENABLE_NGPU_BRIDGE
+extern nvn::Texture *nvnActiveWindowTexture;
+#endif
+
 typedef float Matrix44f[4][4];
 
 // orthographic matrix used for shader
@@ -728,6 +732,23 @@ namespace ImguiNvnBackend {
                                     &projMatrix); // add projection matrix data to uniform data
 
     setRenderStates(); // sets up the rest of the render state, required so that our shader properly gets drawn to the screen
+    const nvn::Texture *renderTarget = nullptr;
+#ifdef IMGUI_SMASH_ENABLE_NGPU_BRIDGE
+    // Bridge mode differs from the original bootstrap-owned path here: an
+    // external runtime can provide the active texture for this frame.
+    if (nvnActiveWindowTexture != nullptr) {
+      renderTarget = nvnActiveWindowTexture;
+    } else
+#endif
+    if (currentTextureIndex != -1) {
+      renderTarget = nvnTextures[currentTextureIndex];
+    }
+
+    if (renderTarget != nullptr) {
+      const nvn::Texture *renderTargets[] = {renderTarget};
+      bd->cmdBuf->SetRenderTargets(1, renderTargets, 0, 0, 0);
+    }
+    bd->cmdBuf->SetViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
 
     size_t vtxOffset = 0, idxOffset = 0;
     nvn::TextureHandle boundTextureHandle = 0;
@@ -767,12 +788,6 @@ namespace ImguiNvnBackend {
 
         // if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
         //   continue;
-        
-        if(currentTextureIndex != -1) {
-            // Logger::log("Current Tex Idx: %d  - Texture Ptr: 0x%p ", currentTextureIndex, (nvn::Texture* const*)&nvnTextures[currentTextureIndex]);
-            bd->cmdBuf->SetRenderTargets(1, (nvn::Texture* const*)(&nvnTextures[currentTextureIndex]), 0, 0, 0);
-        }
-        bd->cmdBuf->SetViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
         bd->cmdBuf->SetScissor(static_cast<int>(clip_min.x), static_cast<int>(clip_min.y),static_cast<int>(clip_size.x), static_cast<int>(clip_size.y));
         // bd->cmdBuf->SetScissor(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
 

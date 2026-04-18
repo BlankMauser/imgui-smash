@@ -9,9 +9,13 @@ endif ()
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
 
+option(IMGUI_SMASH_ENABLE_NGPU_BRIDGE "Enable an external NVN bridge mode" OFF)
 
 ## ImGui user config
 add_compile_definitions(IMGUI_USER_CONFIG="imgui_user_config.h")
+if (IMGUI_SMASH_ENABLE_NGPU_BRIDGE)
+  add_compile_definitions(IMGUI_SMASH_ENABLE_NGPU_BRIDGE=1)
+endif ()
 
 ## Project sources
 include_directories(${PROJECT_SOURCE_DIR}/src_framework/lib)
@@ -39,6 +43,9 @@ file(GLOB_RECURSE SOURCES_CXX
         ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.c
         ${PROJECT_SOURCE_DIR}/src_framework/*.cpp ${PROJECT_SOURCE_DIR}/src_framework/*.c
         )
+if (NOT IMGUI_SMASH_ENABLE_NGPU_BRIDGE)
+  list(FILTER SOURCES_CXX EXCLUDE REGEX ".*/imgui_ngpu_bridge\\.cpp$")
+endif ()
 file(GLOB IMGUI_SOURCES extern/imgui/*.cpp)
 file(GLOB_RECURSE LOCAL_LIBRARIES ${PROJECT_SOURCE_DIR}/libs/*.a)
 
